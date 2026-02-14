@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { Link, useLocation } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
-import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
-import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import CartButton from "../components/cart/CartButton";
 import { useAuth } from "../context/AuthContext";
