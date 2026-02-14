@@ -13,6 +13,7 @@ export default function CartPage() {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const apptitle = import.meta.env.VITE_APP_TITLE;
+  const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
 
   // ใช้ useCallback เพื่อให้สามารถส่งฟังก์ชันไปที่ลูก (CartItem) ได้โดยไม่เกิด Re-render ที่ไม่จำเป็น
@@ -30,6 +31,28 @@ export default function CartPage() {
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
+
+  const handleCreateOrder = async () => {
+    if (!cart || cart.cart_items.length === 0) return;
+
+    try {
+      setIsProcessing(true);
+
+      await api.post('/cart/checkout');
+
+      await genSalesOrderPDF(cart, subtotal, tax, grandTotal, user);
+
+      alert("Sales Order created successfully!");
+
+      await fetchCart();
+      
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Failed to create sales order. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const subtotal = cart?.cart_items.reduce((acc, item) => {
     return acc + Number(item.products?.price) * item.quantity;
@@ -106,12 +129,12 @@ export default function CartPage() {
 
               <div className="pt-6 space-y-3">
                 <Button 
-                  onClick={() => genSalesOrderPDF(cart, subtotal, tax, grandTotal, user)}
+                  onClick={handleCreateOrder} 
                   className="w-full h-12 justify-center text-base font-bold shadow-md" 
                   variant="primary"
-                  disabled={subtotal === 0}
+                  disabled={subtotal === 0 || isProcessing}
                 >
-                  Create Sales Order
+                  {isProcessing ? "Processing..." : "Create Sales Order"}
                 </Button>
               </div>
             </div>
